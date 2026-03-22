@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Payment</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+    margin:0;
+    font-family:Arial, sans-serif;
+    background: linear-gradient(to right,#141e30,#243b55);
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+
+.card {
+    background: rgba(255,255,255,0.1);
+    padding: 30px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+}
+
+h2 { margin-bottom:20px; }
+
+.option {
+    background: rgba(255,255,255,0.2);
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.option:hover {
+    transform: scale(1.02);
+    box-shadow: 0 5px 15px rgba(0,140,220,0.3);
+}
+
+button {
+    margin-top:20px;
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:8px;
+    background:#00cec9;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+    transition: 0.3s;
+}
+button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(0,220,255,0.4);
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+    <h2>💳 Payment</h2>
+    <p><b>Train:</b> {{ booking.train.name }}</p>
+    <p><b>Seats:</b> {{ booking.seats_booked }}</p>
+    <p><b>Total:</b> ₹{{ booking.seats_booked|add:"0"|floatformat:0|add:"0"|default:"250" }}</p>
+
+    <form method="POST">
+        {% csrf_token %}
+        <div class="option">UPI (GPay / PhonePe)</div>
+        <div class="option">Debit/Credit Card</div>
+        <div class="option">Net Banking</div>
+        <button type="submit">Pay Now</button>
+    </form>
+</div>
+
+</body>
+</html>

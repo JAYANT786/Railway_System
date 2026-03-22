@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Book Ticket</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI';
+            background: linear-gradient(135deg, #74ebd5, #ACB6E5);
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            background: #2d3436;
+            padding: 15px 30px;
+            color: white;
+        }
+
+        .navbar a {
+            color: white;
+            margin-left: 15px;
+            text-decoration: none;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            margin-top: 50px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            width: 350px;
+        }
+
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        button {
+            background: green;
+            color: white;
+            border: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="navbar">
+    <h2>🚆 RailApp</h2>
+    <div>
+        👤 {{ request.user.username }}
+        <a href="/">Home</a>
+        <a href="/my-bookings/">My Bookings</a>
+        <a href="/logout/">Logout</a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="card">
+
+        <h2>Book Ticket</h2>
+
+        <p>{{ train.name }}</p>
+        <p>{{ train.source }} → {{ train.destination }}</p>
+
+        <form method="POST">
+            {% csrf_token %}
+            <input type="number" name="seats" placeholder="Seats" required>
+            <input type="date" name="date" required>
+            <button>Confirm</button>
+        </form>
+
+    </div>
+</div>
+
+</body>
+</html>

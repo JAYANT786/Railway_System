@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Bookings</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI';
+            background: #f1f2f6;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            background: #2d3436;
+            padding: 15px 30px;
+            color: white;
+        }
+
+        .navbar a {
+            color: white;
+            margin-left: 15px;
+            text-decoration: none;
+        }
+
+        .container {
+            width: 90%;
+            margin: auto;
+            margin-top: 30px;
+        }
+
+        table {
+            width: 100%;
+            background: white;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #0984e3;
+            color: white;
+        }
+
+        td, th {
+            padding: 10px;
+            text-align: center;
+        }
+
+        .cancel {
+            background: red;
+            color: white;
+            padding: 5px 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="navbar">
+    <h2>🚆 RailApp</h2>
+    <div>
+        👤 {{ request.user.username }}
+        <a href="/">Home</a>
+        <a href="/my-bookings/">My Bookings</a>
+        <a href="/logout/">Logout</a>
+    </div>
+</div>
+
+<div class="container">
+
+    <h2>My Bookings</h2>
+
+    <table>
+        <tr>
+            <th>PNR</th>
+            <th>Train</th>
+            <th>Route</th>
+            <th>Seats</th>
+            <th>Date</th>
+            <th>Action</th>
+        </tr>
+
+        {% for booking in bookings %}
+        <tr>
+            <td>{{ booking.pnr }}</td>
+            <td>{{ booking.train.name }}</td>
+            <td>{{ booking.train.source }} → {{ booking.train.destination }}</td>
+            <td>{{ booking.seats_booked }}</td>
+            <td>{{ booking.journey_date }}</td>
+            <td>
+                <a href="/cancel/{{ booking.id }}/" class="cancel">Cancel</a>
+            </td>
+        </tr>
+        {% endfor %}
+
+    </table>
+
+</div>
+
+</body>
+</html>

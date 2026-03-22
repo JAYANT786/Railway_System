@@ -1,0 +1,391 @@
+{% comment %} <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Available Trains</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+/* Reset & Body */
+* {box-sizing:border-box; margin:0; padding:0;}
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(to bottom, #00c6ff, #0072ff);
+    min-height: 100vh;
+    color: #333;
+    overflow-x: hidden;
+    animation: fadeBody 1s ease-in;
+}
+@keyframes fadeBody {
+    from {opacity:0;}
+    to {opacity:1;}
+}
+
+/* Moving train animation */
+.train-emoji {
+    position: absolute;
+    font-size: 2rem;
+    top: 20px;
+    animation: moveTrain 10s linear infinite;
+}
+@keyframes moveTrain {
+    0% {left: -50px;}
+    100% {left: 100%;}
+}
+
+/* Navbar */
+.navbar {
+            display: flex;
+            justify-content: space-between;
+            background: #2d3436;
+            padding: 15px 30px;
+            color: white;
+        }
+
+        .navbar a {
+            color: white;
+            margin-left: 15px;
+            text-decoration: none;
+        }
+
+
+/* Container */
+.container {
+    max-width:1000px;
+    margin: 80px auto 40px auto; /* leave space for train emoji */
+    padding:30px 20px;
+    background: rgba(255,255,255,0.95);
+    border-radius:15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    animation: fadeIn 1s ease-in;
+}
+@keyframes fadeIn {
+    from {opacity:0; transform: translateY(20px);}
+    to {opacity:1; transform: translateY(0);}
+}
+
+/* Title */
+h1 {
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 2.2rem;
+    color: #0072ff;
+}
+
+/* Search Form */
+form {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+input[type="text"] {
+    flex:1 1 200px;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    transition: 0.3s;
+}
+input[type="text"]:focus {
+    border-color: #0072ff;
+    box-shadow: 0 0 8px rgba(0,114,255,0.5);
+    outline: none;
+}
+button {
+    padding: 12px 25px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(45deg, #00c6ff, #0072ff);
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(0,114,255,0.4);
+}
+
+/* Train Table */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+th, td {
+    padding: 14px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+th {
+    background: #0072ff;
+    color: #fff;
+    font-weight: 600;
+}
+tr {
+    transition: 0.3s;
+}
+tr:hover {
+    background: rgba(0,114,255,0.1);
+}
+
+/* Book button */
+.book-btn {
+    padding:6px 12px;
+    border-radius:8px;
+    border:none;
+    background: linear-gradient(45deg,#00c6ff,#0072ff);
+    color:white;
+    cursor:pointer;
+    font-weight:600;
+    transition:0.4s;
+}
+.book-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px #00c6ff, 0 0 20px #0072ff;
+}
+
+/* No trains found */
+.no-train {
+    text-align: center;
+    color: #ff4d4f;
+    font-weight: bold;
+    padding: 20px 0;
+    font-size: 1.2rem;
+}
+
+/* Responsive */
+@media(max-width:768px){
+    h1 {font-size:1.8rem;}
+    input[type="text"] {flex:1 1 100%;}
+    table, th, td {font-size:0.9rem;}
+    .nav-links {flex-direction: column; gap: 10px;}
+}
+</style>
+</head>
+<body>
+
+<!-- Moving train emoji -->
+<div class="train-emoji">🚆</div>
+
+<!-- Navbar -->
+<div class="navbar">
+    <h2>🚆 RailApp</h2>
+    <div>
+        👤 {{ request.user.username }}
+        <a href="/">Home</a>
+        <a href="/my-bookings/">My Bookings</a>
+        <a href="/logout/">Logout</a>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container">
+    <h1>🚆 Available Trains</h1>
+
+    <!-- Search -->
+    <form method="GET">
+        <input type="text" name="source" placeholder="Enter Source" value="{{ request.GET.source|default:'' }}">
+        <input type="text" name="destination" placeholder="Enter Destination" value="{{ request.GET.destination|default:'' }}">
+        <button type="submit">Search</button>
+    </form>
+
+    <!-- Train Table -->
+    {% if trains %}
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Number</th>
+            <th>Source</th>
+            <th>Destination</th>
+            <th>Seats</th>
+            <th>Action</th>
+        </tr>
+        {% for train in trains %}
+        <tr>
+            <td>{{ train.name }}</td>
+            <td>{{ train.number }}</td>
+            <td>{{ train.source }}</td>
+            <td>{{ train.destination }}</td>
+            <td>{{ train.total_seats }}</td>
+            <td>
+                {% if user.is_authenticated %}
+                <a href="/book/{{ train.id }}/"><button class="book-btn">Book</button></a>
+                {% else %}
+                <span style="color:red; font-size:0.9rem;">Login to Book</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <div class="no-train">No trains found 🚫</div>
+    {% endif %}
+</div>
+
+</body>
+</html> {% endcomment %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Available Trains</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+/* Reset & Body */
+* {box-sizing:border-box; margin:0; padding:0;}
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(to bottom, #00c6ff, #0072ff);
+    min-height: 100vh;
+    color: #333;
+    overflow-x: hidden;
+    animation: fadeBody 1s ease-in;
+}
+@keyframes fadeBody { from {opacity:0;} to {opacity:1;} }
+
+/* Moving train emoji */
+.train-emoji {
+    position: absolute;
+    font-size: 2rem;
+    top: 20px;
+    animation: moveTrain 10s linear infinite;
+}
+@keyframes moveTrain { 0% {left:-50px;} 100% {left:100%;} }
+
+/* Navbar */
+.navbar {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:#2d3436;
+    padding:15px 20px;
+    color:white;
+    position: sticky;
+    top:0;
+    z-index: 999;
+}
+.navbar h2 { font-size:1.5rem; }
+.navbar .nav-links { display:flex; align-items:center; gap:15px; }
+.navbar a { color:white; text-decoration:none; font-weight:500; transition:0.3s; }
+.navbar a:hover { color:#00cec9; }
+.navbar .user-name { font-weight:600; margin-right:10px; }
+
+/* Container */
+.container {
+    max-width:1000px;
+    margin:100px auto 40px auto;
+    padding:30px 20px;
+    background: rgba(255,255,255,0.95);
+    border-radius:15px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.2);
+    animation: fadeIn 1s ease-in;
+}
+@keyframes fadeIn { from {opacity:0; transform: translateY(20px);} to {opacity:1; transform: translateY(0);} }
+
+/* Title */
+h1 { text-align:center; margin-bottom:25px; font-size:2.2rem; color:#0072ff; }
+
+/* Search Form */
+form { display:flex; flex-wrap:wrap; justify-content:center; gap:15px; margin-bottom:25px; }
+input[type="text"] {
+    flex:1 1 200px; padding:12px; border-radius:10px; border:1px solid #ccc;
+    transition:0.3s;
+}
+input[type="text"]:focus { border-color:#0072ff; box-shadow:0 0 8px rgba(0,114,255,0.5); outline:none; }
+button { padding:12px 25px; border-radius:10px; border:none; background: linear-gradient(45deg,#00c6ff,#0072ff); color:#fff; font-weight:bold; cursor:pointer; transition:0.3s; }
+button:hover { transform:scale(1.05); box-shadow:0 5px 15px rgba(0,114,255,0.4); }
+
+/* Train Table */
+table { width:100%; border-collapse:collapse; border-radius:10px; overflow:hidden; box-shadow:0 5px 15px rgba(0,0,0,0.1); }
+th, td { padding:14px; text-align:center; border-bottom:1px solid #ddd; }
+th { background:#0072ff; color:#fff; font-weight:600; }
+tr { transition:0.3s; }
+tr:hover { background: rgba(0,114,255,0.1); }
+
+/* Book button */
+.book-btn { padding:6px 12px; border-radius:8px; border:none; background: linear-gradient(45deg,#00c6ff,#0072ff); color:white; cursor:pointer; font-weight:600; transition:0.4s; }
+.book-btn:hover { transform: scale(1.1); box-shadow: 0 0 15px #00c6ff, 0 0 20px #0072ff; }
+
+/* No trains found */
+.no-train { text-align:center; color:#ff4d4f; font-weight:bold; padding:20px 0; font-size:1.2rem; }
+
+/* Responsive */
+@media(max-width:768px){
+    h1 { font-size:1.8rem; }
+    input[type="text"] { flex:1 1 100%; }
+    table, th, td { font-size:0.9rem; }
+    .nav-links { flex-direction: column; gap:10px; align-items:flex-start; }
+}
+</style>
+</head>
+<body>
+
+<!-- Moving train emoji -->
+<div class="train-emoji">🚆</div>
+
+<!-- Navbar -->
+<div class="navbar">
+    <h2>🚆 RailApp</h2>
+    <div class="nav-links">
+        <a href="/">Home</a>
+        {% if request.user.is_authenticated %}
+            <a href="/my-bookings/">My Bookings</a>
+            <span class="user-name">Hi, {{ request.user.username }}</span>
+            <a href="/logout/">Logout</a>
+        {% else %}
+            <a href="/login/">Login</a>
+            <a href="/register/">Register</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container">
+    <h1>🚆 Available Trains</h1>
+
+    <!-- Search -->
+    <form method="GET">
+        <input type="text" name="source" placeholder="Enter Source" value="{{ request.GET.source|default:'' }}">
+        <input type="text" name="destination" placeholder="Enter Destination" value="{{ request.GET.destination|default:'' }}">
+        <button type="submit">Search</button>
+    </form>
+
+    <!-- Train Table -->
+    {% if trains %}
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Number</th>
+            <th>Source</th>
+            <th>Destination</th>
+            <th>Seats</th>
+            <th>Action</th>
+        </tr>
+        {% for train in trains %}
+        <tr>
+            <td>{{ train.name }}</td>
+            <td>{{ train.number }}</td>
+            <td>{{ train.source }}</td>
+            <td>{{ train.destination }}</td>
+            <td>{{ train.total_seats }}</td>
+            <td>
+                {% if request.user.is_authenticated %}
+                    <a href="/book/{{ train.id }}/"><button class="book-btn">Book</button></a>
+                {% else %}
+                    <span style="color:red; font-size:0.9rem;">Login to Book</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <div class="no-train">No trains found 🚫</div>
+    {% endif %}
+</div>
+
+</body>
+</html>
